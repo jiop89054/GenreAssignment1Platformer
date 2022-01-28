@@ -35,9 +35,6 @@ public class PlayerMovement : MonoBehaviour
     public float wallJumpTime;
     //Makes the animations work
     Animator animator;
-    public float fast;
-    public float height;
-    public float risingOrFalling;
     //Dash system
     public bool isDashing;
     public float maxDashes;
@@ -65,17 +62,17 @@ public class PlayerMovement : MonoBehaviour
 
         //Activates animations
         //running
-        animator.SetBool("Run", rb.velocity.x != 0);
-        //jumping/falling
-        if(rb.velocity.y == 0)
+        animator.SetBool("Run", horizontalInput != 0);
+        //jumping and falling
+        if(rb.velocity.y < 0.01 && rb.velocity.y > -0.01)
         {
             animator.SetInteger("AirState", 0);
         }
-        if(rb.velocity.y > 0)
+        if(rb.velocity.y > 0.01)
         {
             animator.SetInteger("AirState", 1);
         }
-        if(rb.velocity.y < 0 && !wallJumping)
+        if(rb.velocity.y < -0.01 && !wallJumping)
         {
             animator.SetInteger("AirState", -1);
         }
@@ -87,14 +84,8 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.SetBool("IsWallSliding", false);
         }
-        //animator.SetFloat("JumpingUp", rb.velocity.y);
-        /*fast = velocity.x;
-        animator.SetFloat("Speed", Mathf.Abs(fast));
-        height = velocity.y;
-        if (height < 0.1)
-        {
-            animator.SetBool("IsJumping", false);
-        }*/
+        //Dash Animation
+        animator.SetBool("Dashing", isDashing);
 
         //If statement that flips character
         if (horizontalInput > 0.01f)
@@ -117,12 +108,10 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             extraJumps--;
-            //animator.SetBool("IsJumping", true);
         }
         else if (Input.GetKeyDown(KeyCode.Space) && extraJumps == 0 && isGrounded == true)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            //animator.SetBool("IsJumping", true);
         }
         //for dashing
         if (Input.GetKeyDown(KeyCode.LeftShift) && DashesRemaining > 0)
@@ -146,6 +135,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(-DashPower, 0);
         }
+        isDashing = isDashingRight || isDashingLeft;
         //this is for wall sliding
         isTouchingFront = Physics2D.OverlapCircle(frontCheck.position, checkRadius, whatIsGround) || Physics2D.OverlapCircle(frontCheck2.position, checkRadius, whatIsGround);
         if (isTouchingFront == true && isGrounded == false && horizontalInput != 0)
@@ -169,12 +159,6 @@ public class PlayerMovement : MonoBehaviour
             Invoke("SetWallJumpingToFalse", wallJumpTime);
 
         }
-        //position freezing
-        if (Input.GetKey(KeyCode.S))
-        {
-            rb.velocity = new Vector2(0, rb.velocity.y);
-        }
-
         if (wallJumping == true)
         {
             rb.velocity = new Vector2(xWallForce * -horizontalInput, yWallForce);
